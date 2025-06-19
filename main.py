@@ -330,7 +330,7 @@ async def editreset(interaction: discord.Interaction, name: str, new_name: str =
 
 # -------------- REMINDERS --------------
 
-@tasks.loop(seconds=30)
+@tasks.loop(seconds=10)
 async def daily_reminder(bot):
     est = pytz.timezone("America/New_York")
     now = datetime.now(est)
@@ -349,7 +349,7 @@ async def daily_reminder(bot):
         if reminder_state["daily"] == daystr:
             reminder_state["daily"] = None
 
-@tasks.loop(seconds=30)
+@tasks.loop(seconds=10)
 async def weekly_reminder(bot):
     est = pytz.timezone("America/New_York")
     now = datetime.now(est)
@@ -377,6 +377,21 @@ async def weekly_reminder(bot):
             if now >= window_end and reminder_state["weekly"].get(flag_key) == nowstr:
                 reminder_state["weekly"][flag_key] = None
 
+@tasks.loop(seconds=10)
+async def refresh_weekly_embed():
+    data = load_resets()
+    channel = bot.get_channel(RESET_CHANNEL_ID)
+    
+    if os.path.exists(WEEKLY_FILE):
+        with open(WEEKLY_FILE, "r") as f:
+            msg_id = int(f.read().strip())
+        try:
+            msg = await channel.fetch_message(msg_id)
+            embed = format_weekly_embed(data["weekly"])
+            await msg.edit(embed=embed)
+        except Exception as e:
+            print(f"Failed to update weekly message: {e}")
+            
 # -------------- BOT LAUNCH --------------
 
 TOKEN = os.getenv("DISCORD_TOKEN")
@@ -388,5 +403,7 @@ async def on_ready():
         daily_reminder.start(bot)
     if not weekly_reminder.is_running():
         weekly_reminder.start(bot)
+    if not refresh_weekly_embed.is_running():
+        refresh_weekly_embed.start()
 
 bot.run(TOKEN)
