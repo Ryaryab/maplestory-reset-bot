@@ -87,7 +87,7 @@ def format_weekly_embed(data):
     changed = False
     for r in data:
         # Always recompute the next future timestamp if the old one is in the past!
-        if now.timestamp() > r["timestamp"]:
+        while now.timestamp() > r["timestamp"]:
             # Calculate the NEXT weekly reset (not the old one)
             r["timestamp"] = compute_timestamp(r["time"], "weekly", r["day"])
             changed = True
