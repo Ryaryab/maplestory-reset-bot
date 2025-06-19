@@ -29,7 +29,7 @@ To deploy yourself, set a `DISCORD_TOKEN` environment variable with your bot tok
 
 ## Credits
 
-- Built by Ryan Bradley
+- Built by Ryaryab
 - Powered by OpenAI GPT and Railway
 
 ## License
