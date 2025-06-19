@@ -83,10 +83,20 @@ def format_weekly_embed(data):
         title="<a:MaplestoryMushroom:1385184240643084441> __WEEKLY RESETS__",
         color=PASTEL_PINK
     )
+    now = datetime.now(pytz.timezone("America/New_York"))
+    changed = False
     for r in data:
+        # Always recompute the next future timestamp if the old one is in the past!
+        if now.timestamp() > r["timestamp"]:
+            # Calculate the NEXT weekly reset (not the old one)
+            r["timestamp"] = compute_timestamp(r["time"], "weekly", r["day"])
+            changed = True
         emoji = f"{r['emoji']} " if r['emoji'] else ""
         ts = f"<t:{r['timestamp']}:R>"
         embed.add_field(name=f"{emoji}**{r['name']}**", value=ts, inline=False)
+    # Save new timestamps back to file if changed
+    if changed:
+        save_resets({"daily": load_resets().get("daily", []), "weekly": data})
     return embed
 
 def format_daily_reminder(data):
